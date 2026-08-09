@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waktunya Makan! 🍔 - Alarm Pengingat Makan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #FFD166, #EF476F);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .container {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      border-radius: 28px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    h1 {
+      color: #118AB2;
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      color: #343a40;
+      margin-bottom: 8px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 14px;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #118AB2;
+    }
+
+    .btn-set {
+      background-color: #06D6A0;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #049f76;
+      transition: 0.1s;
+    }
+
+    .btn-set:active {
+      transform: translateY(4px);
+      box-shadow: none;
+    }
+
+    /* Tampilan Status Alarm Aktif */
+    .alarm-status {
+      margin-top: 24px;
+      background: #E8F8F5;
+      border: 2px dashed #06D6A0;
+      padding: 16px;
+      border-radius: 16px;
+      display: none;
+    }
+
+    .alarm-status p {
+      color: #049f76;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .btn-stop {
+      background-color: #FF6B6B;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Modal Pop-up saat Alarm Berbunyi */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      display: none;
+      z-index: 99;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 320px;
+      width: 100%;
+      animation: bounce 0.5s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .modal-content h2 {
+      color: #EF476F;
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+
+    .modal-content p {
+      color: #495057;
+      margin-bottom: 20px;
+    }
+
+    .btn-eat {
+      background: #FFD166;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #343a40;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🍽️ Alarm Pengingat Makan</h1>
+    <p class="subtitle">Jangan sampai telat makan lagi ya!</p>
+
+    <!-- Form Input Alarm -->
+    <div class="form-group">
+      <label for="alarmTime">Pilih Jam Makan:</label>
+      <input type="time" id="alarmTime">
+    </div>
+
+    <div class="form-group">
+      <label for="mealType">Keterangan Menu:</label>
+      <select id="mealType">
+        <option value="Waktunya Sarapan Pagi! 🍳">Sarapan Pagi</option>
+        <option value="Waktunya Makan Siang! 🥗">Makan Siang</option>
+        <option value="Waktunya Makan Malam! 🍲">Makan Malam</option>
+        <option value="Waktunya Ngemil Sehat! 🍎">Camilan Sehat</option>
+      </select>
+    </div>
+
+    <button class="btn-set" onclick="setAlarm()">Pasang Alarm ⏰</button>
+
+    <!-- Status Aktif -->
+    <div class="alarm-status" id="activeStatus">
+      <p id="statusText">Alarm aktif untuk pukul 00:00</p>
+      <button class="btn-stop" onclick="cancelAlarm()">Batalkan Alarm 🛑</button>
+    </div>
+  </div>
+
+  <!-- Pop-up Alarm Bunyi -->
+  <div class="modal" id="alarmModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Waktunya Makan!</h2>
+      <p id="modalDesc">Sudah waktunya mengisi energi tubuhmu.</p>
+      <button class="btn-eat" onclick="stopAlarm()">Sudah Makan! 😋</button>
+    </div>
+  </div>
+
+  <script>
+    let alarmInterval = null;
+    let targetTimeStr = "";
+    let selectedMealText = "";
+    let audioCtx = null;
+    let beepingTimer = null;
+
+    // Fungsi Membuat Suara Alarm Menggunakan Web Audio API (Tanpa File MP3 Eksternal)
+    function playBeep() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      let osc = audioCtx.createOscillator();
+      let gainNode = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Nada D5 (ceria)
+      
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3); // Bunyi pendek berulang
+    }
+
+    function startBeepingSound() {
+      playBeep();
+      beepingTimer = setInterval(playBeep, 600); // Bunyi tiap 0.6 detik
+    }
+
+    function stopBeepingSound() {
+      if (beepingTimer) {
+        clearInterval(beepingTimer);
+        beepingTimer = null;
+      }
+    }
+
+    // Fungsi Pasang Alarm
+    function setAlarm() {
+      const timeInput = document.getElementById('alarmTime').value;
+      const mealSelect = document.getElementById('mealType').value;
+
+      if (!timeInput) {
+        alert("Silakan pilih waktu alarm terlebih dahulu!");
+        return;
+      }
+
+      targetTimeStr = timeInput;
+      selectedMealText = mealSelect;
+
+      // Tampilkan status aktif
+      document.getElementById('activeStatus').style.display = 'block';
+      document.getElementById('statusText').innerText = `Alarm aktif untuk pukul ${targetTimeStr}`;
+
+      // Mulai pengecekan waktu setiap detik
+      if (alarmInterval) clearInterval(alarmInterval);
+      alarmInterval = setInterval(checkAlarmTime, 1000);
+
+      alert(`Alarm berhasil dipasang untuk pukul ${targetTimeStr}!`);
+    }
+
+    // Fungsi Mengecek Waktu Realtime
+    function checkAlarmTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${hours}:${minutes}`;
+
+      if (currentTimeStr === targetTimeStr) {
+        triggerAlarmNotification();
+        clearInterval(alarmInterval); // Hentikan pengecekan setelah berbunyi
+      }
+    }
+
+    // Fungsi Trigger Alarm (Suara + Getar + Pop-up)
+    function triggerAlarmNotification() {
+      // Ubah teks modal sesuai pilihan menu
+      document.getElementById('modalTitle').innerText = selectedMealText;
+      document.getElementById('alarmModal').style.display = 'flex';
+
+      // Jalankan suara alarm otomatis
+      startBeepingSound();
+
+      // Jalankan efek getar jika perangkat mendukung (navigator.vibrate)
+      if ("vibrate" in navigator) {
+        // Pola getar: Getar 500ms, jeda 200ms, berulang
+        navigator.vibrate([500, 200, 500, 200, 500]);
+      }
+    }
+
+    // Fungsi Matikan Alarm (Tombol "Sudah Makan")
+    function stopAlarm() {
+      document.getElementById('alarmModal').style.display = 'none';
+      document.getElementById('activeStatus').style.display = 'none';
+      stopBeepingSound();
+      
+      // Hentikan getaran jika masih bergetar
+      if ("vibrate" in navigator) {
+        navigator.vibrate(0);
+      }
+    }
+
+    // Fungsi Batalkan Alarm Manual
+    function cancelAlarm() {
+      if (alarmInterval) clearInterval(alarmInterval);
+      document.getElementById('activeStatus').style.display = 'none';
+      alert("Alarm dibatalkan.");
+    }
+  </script>
+</body>
+</html>
